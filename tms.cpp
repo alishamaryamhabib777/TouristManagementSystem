@@ -239,3 +239,253 @@ public:
             selectedSpot);
     }
 };
+// =====================================================
+// MODULE 2: HOTEL BOOKING
+
+// Structure to hold all the details of a single hotel booking.
+struct bookingsummary {
+    string name;
+    string city;
+    int occupancy;
+    string roomtype;
+    int noofdays;
+    int roomno;
+    bool meals;
+    string currency;
+    double total_bill;
+};
+// Structure to hold all the data about a single hotel.
+struct hotel {
+    string name;
+    string city;
+    int star;
+    double priceUSDstan;
+    double pricePKRstan;
+    double pricedeluxe;
+    double pricesuite;
+    bool roomService;
+    double mealprice;
+    int availroom;
+    vector<bool> BookedRooms;
+};
+// This class handles hotel management, booking, and bill calculation.
+class HotelBookingModule {
+private:
+    vector<hotel> Hotels;
+    vector<bookingsummary> allBookings;// In-memory list of current session bookings.
+    // room assignment function which finds available rooms and marks them as booked.
+    vector<int> assignrooms(hotel& h, int roomsRequested) {
+        vector<int> assigned;
+        for (int i = 0; i < h.BookedRooms.size() && assigned.size() < roomsRequested; i++) {
+            if (!h.BookedRooms[i]) {// If the room is not booked
+                h.BookedRooms[i] = true;
+                assigned.push_back(i + 1);
+            }
+        }
+        return assigned;
+    }
+    // Calculates the total cost for the stay based on room type, days, and currency.
+    double calculatebill(const hotel& h, int roomType, int rooms, int days, int occupancy, bool meals, string currency) {
+        double roomprice = 0;
+        double usdToPkrRate = h.pricePKRstan / h.priceUSDstan;
+        // Determine the base room price based on type and desired currency.
+        if (roomType == 1) roomprice = (currency == "USD") ? h.priceUSDstan : h.pricePKRstan;
+        else if (roomType == 2) roomprice = (currency == "USD") ? h.pricedeluxe : h.pricedeluxe * usdToPkrRate;
+        else if (roomType == 3) roomprice = (currency == "USD") ? h.pricesuite : h.pricesuite * usdToPkrRate;
+
+        double total = roomprice * rooms * days;
+        // Add the cost for meals if requested 
+        if (meals && !h.roomService)
+            total += h.mealprice * occupancy * days * ((currency == "USD") ? 1.0 : usdToPkrRate);
+        return total;
+    }
+    // Fills up the list of hotels with their details and initializes their room availability.
+    void initializeHotels() {
+        Hotels = {
+            {"PC Hotel", "Rawalpindi", 5, 87.00, 24400.00, 120.00, 200.00, true, 0, 54},
+            {"Best Western Hotel", "Rawalpindi", 3, 70.00, 19600.00, 100.00, 150.00, false, 15.00, 100},
+            {"Hotel Khursheed Palace", "Rawalpindi", 3, 40.00, 11200.00, 60.00, 100.00, false, 10.00, 30},
+            {"Pearl Continental Hotel", "Lahore", 5, 100.00, 28000.00, 150.00, 250.00, true, 0, 32},
+            {"Grand Royal Hotel", "Lahore", 3, 32.00, 5500.00, 50.00, 80.00, false, 12.00, 15},
+            {"Faletti's Hotel", "Lahore", 5, 90.00, 25200.00, 130.00, 220.00, true, 0, 40},
+            {"Embassy Inn Hotel", "Karachi", 3, 27.00, 7500.00, 45.00, 70.00, false, 8.00, 40},
+            {"Avari Towers", "Karachi", 5, 107.00, 29960.00, 160.00, 280.00, true, 0, 120},
+            {"Pearl Continental Hotel", "Karachi", 5, 97.00, 27160.00, 150.00, 250.00, true, 0, 200},
+            {"Mövenpick Hotel", "Karachi", 5, 120.00, 33600.00, 180.00, 300.00, true, 0, 80},
+            {"Islamabad Serena Hotel", "Islamabad", 5, 209.00, 58400.00, 300.00, 500.00, true, 0, 120},
+            {"Islamabad Marriott Hotel", "Islamabad", 5, 130.00, 36400.00, 200.00, 350.00, true, 0, 288},
+            {"Hotel One Jinnah", "Islamabad", 3, 25.00, 7000.00, 40.00, 70.00, false, 10.00, 50},
+            {"Reina Boutique Hotel", "Islamabad", 5, 75.00, 21000.00, 120.00, 200.00, true, 0, 25},
+            {"Ramada by Wyndham", "Multan", 3, 112.00, 31360.00, 150.00, 200.00, false, 20.00, 90},
+            {"Hotel One", "Multan", 3, 35.00, 9800.00, 50.00, 80.00, false, 12.00, 45},
+            {"Al-Hamra Hotel", "Multan", 5, 95.00, 26600.00, 140.00, 220.00, true, 0, 50}
+        };
+        // For every hotel, initialize all its rooms as available (false).
+        for (auto& h : Hotels) {
+            h.BookedRooms = vector<bool>(h.availroom, false);
+        }
+    }
+    // Reads and displays all saved bookings from the "bookings.txt" file.
+    void viewAllBookings() {
+        cout << "\n********** ALL BOOKINGS **********\n";
+        ifstream fin("bookings.txt");
+
+        if (!fin) {
+            cout << "No bookings file found.\n";
+        }
+        else {
+            string line;
+            while (getline(fin, line)) {
+                cout << line << endl;
+            }
+            fin.close();
+        }
+    }
+
+public:// runs when the HotelBookingModule object is created.
+    HotelBookingModule() {
+        initializeHotels();// Load all the hotel data.
+    }
+
+    void runHotelBooking() {
+        cout << "\n********** HOTEL MANAGEMENT SYSTEM **********\n";
+        cout << "1. Book a room\n";
+        cout << "2. View bookings\n";
+        cout << "3. Back to Main Menu\n";
+        cout << "Choice: ";
+        int mainoption;
+        cin >> mainoption;
+
+        if (mainoption == 3) return;
+        // Option 1: Book a room 
+        if (mainoption == 1) {
+            bookingsummary Booking;
+            // Get city choice.
+            cout << "which city are you planning to stay in? select one:\n";
+            string cities[] = { "Lahore", "Islamabad", "Rawalpindi", "Karachi","Multan" };
+            for (int i = 0;i <= 4;i++) {
+                cout << i + 1 << "." << cities[i] << endl;
+            }
+            int choice;
+            cin >> choice;
+
+            if (choice < 1 || choice > 5) {
+                cout << "Invalid city choice.\n";
+                return;
+            }
+            Booking.city = cities[choice - 1];
+            //Display available hotels in the selected city.
+            vector<hotel*> hotelsInCity;
+            for (auto& h : Hotels)
+                if (h.city == Booking.city) hotelsInCity.push_back(&h);
+            if (hotelsInCity.empty()) {
+                cout << "No hotels found in this city.\n";
+                return;
+            }
+            //  Select currency.
+            cout << "Select currency:\n1. USD\n2. PKR\nChoice: ";
+            int curChoice;
+            cin >> curChoice;
+            Booking.currency = (curChoice == 1) ? "USD" : "PKR";
+
+            cout << "Select a hotel:\n";
+            int num = 1;
+            for (auto* h : hotelsInCity) {
+                double price = (Booking.currency == "USD") ? h->priceUSDstan : h->pricePKRstan;
+                cout << num << ". " << h->name << " | " << h->star << "stars | "
+                    << price << " " << Booking.currency << " per night" << endl;
+                num++;
+            }
+            int hotelChoice;
+            cin >> hotelChoice;
+
+            if (hotelChoice < 1 || hotelChoice > hotelsInCity.size()) {
+                cout << "Invalid hotel choice.\n";
+                return;
+            }
+
+            hotel* selectHotel = hotelsInCity[hotelChoice - 1];
+            Booking.name = selectHotel->name;
+            //Select room type(Standard, Deluxe, Suite).
+            int roomtype;
+            cout << "select type of room:\n";
+            cout << "1.Standard\n2.Deluxe\n3.Suite\n";
+            cin >> roomtype;
+            switch (roomtype) {
+            case 1: Booking.roomtype = "Standard"; break;
+            case 2: Booking.roomtype = "Deluxe"; break;
+            case 3: Booking.roomtype = "Suite"; break;
+            default: cout << "Invalid room type.\n"; return;
+            }
+            // number of rooms requested.
+            cout << "Enter number of rooms to be booked: ";
+            cin >> Booking.roomno;
+
+            vector<int> assigned = assignrooms(*selectHotel, Booking.roomno);
+            if (assigned.size() < Booking.roomno) {
+                cout << "Sorry, not enough rooms available in this hotel. Only " << assigned.size() << " rooms booked.\n";
+
+                return;
+            }
+            else {
+                cout << "Your assigned rooms are: ";
+                for (int r : assigned) cout << r << " ";
+                cout << endl;
+            }
+
+            cout << "Number of days: ";
+            cin >> Booking.noofdays;
+
+            cout << "Occupancy in one room: ";
+            cin >> Booking.occupancy;
+            //choose meal plan.
+            cout << "Are you planning to eat out or do you want meals in hotel?\n";
+            cout << "1.Meals in hotel (room service)\n";
+            cout << "2.Planning to eat out\n";
+            int choosemeal;
+            cin >> choosemeal;
+            Booking.meals = (choosemeal == 1);
+
+            Booking.total_bill = calculatebill(*selectHotel, roomtype, Booking.roomno, Booking.noofdays, Booking.occupancy, Booking.meals, Booking.currency);
+
+            cout << fixed << setprecision(2);
+            cout << "Total cost: " << Booking.total_bill << " " << Booking.currency << endl;
+
+            // -------------------- Save booking --------------------
+            allBookings.push_back(Booking);
+            ofstream fout("bookings.txt", ios::app);
+
+            fout << "Hotel: " << Booking.name << ", "
+                << "City: " << Booking.city << ", "
+                << "Room Type: " << Booking.roomtype << ", "
+                << "Rooms: " << Booking.roomno << ", "
+                << "Days: " << Booking.noofdays << ", "
+                << "Total: " << Booking.total_bill << " "
+                << Booking.currency << endl;
+
+            fout.close();
+
+            // Display Summary
+            cout << "\n********** BOOKING SUMMARY **********\n";
+            cout << "Hotel: " << Booking.name << endl;
+            cout << "City: " << Booking.city << endl;
+            cout << "Room Type: " << Booking.roomtype << endl;
+            cout << "Number of Rooms: " << Booking.roomno << endl;
+            cout << "Number of Days: " << Booking.noofdays << endl;
+            cout << "Occupancy per Room: " << Booking.occupancy << endl;
+            cout << "Meals Included: " << (Booking.meals ? "Yes" : "No") << endl;
+            cout << "Assigned Room Numbers: ";
+            for (int r : assigned) cout << r << " ";
+            cout << endl;
+            cout << fixed << setprecision(2);
+            cout << "Total Bill: " << Booking.total_bill << " " << Booking.currency << endl;
+            cout << "***********************************\n";
+        }
+        else if (mainoption == 2) {
+            viewAllBookings();
+        }
+        else {
+            cout << "Invalid choice.\n";
+        }
+    }
+};
