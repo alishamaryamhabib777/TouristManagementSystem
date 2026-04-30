@@ -489,3 +489,150 @@ public:// runs when the HotelBookingModule object is created.
         }
     }
 };
+
+// ===================================================
+// MODULE 3: TRANSPORT BOOKING
+
+
+// Structure to hold details of an available vehicle.
+struct Vehicle {
+    int id;
+    string type;
+    string model;
+    int capacity;
+    double baseFare;
+    string driverName;
+    bool available;
+};
+// Structure to hold details of a completed transport booking.
+
+struct BookingTransport {
+    int bookingId;
+    int vehicleId;
+    string customerName;
+    string date;
+    int seatsBooked;
+    double totalCost;
+};
+// This class manages the vehicle list and handles transport booking.
+
+class TransportSystemModule {
+private:
+    vector<Vehicle> vehicles;
+    vector<BookingTransport> bookings;
+    int nextBookingId = 1;
+
+    void initializeVehicles() {
+        vehicles.push_back({ 1, "Bus", "Volvo 9700", 40, 15.0, "Ali Akbar", true });
+        vehicles.push_back({ 2, "Car", "Cultus Alto", 4, 10.0, "Ahmad Khalil", true });
+        vehicles.push_back({ 3, "Van", "Ford Transit", 12, 12.0, "Mutahar kiani", true });
+    }
+    // Displays the entire list of vehicles in a nice, formatted table.
+
+    void listVehicles() {
+        cout << "\n===== AVAILABLE VEHICLES =====\n";
+        cout << left << setw(6) << "ID" << setw(10) << "Type" << setw(12)
+            << "Model" << setw(9) << "Capacity" << setw(12) << "BaseFare"
+            << setw(16) << "Driver" << "Available\n";
+        cout << string(70, '-') << "\n";
+        for (auto& v : vehicles) {
+            cout << left << setw(6) << v.id << setw(10) << v.type << setw(12)
+                << v.model << setw(9) << v.capacity << setw(12) << fixed << setprecision(2) << v.baseFare
+                << setw(16) << v.driverName << (v.available ? "Yes" : "No") << "\n";
+        }
+        cout << "==============================\n";
+    }
+    // Prints a detailed invoice for a successful booking.
+
+    void printInvoice(const BookingTransport& b, const Vehicle& v) {
+        cout << "\n===== TRANSPORT INVOICE =====\n";
+        cout << "Booking ID: " << b.bookingId << "\n";
+        cout << "Customer: " << b.customerName << "\n";
+        cout << "Vehicle: " << v.type << " (" << v.model << ")\n";
+        cout << "Driver: " << v.driverName << "\n";
+        cout << "Date: " << b.date << "\n";
+        cout << "Seats: " << b.seatsBooked << "\n";
+        cout << fixed << setprecision(2);
+        cout << "Total cost: " << b.totalCost << "\n";
+        cout << "=============================\n\n";
+    }
+
+    // Helper function to safely read an integer from the user, handling bad input (like letters).
+
+    static int readInt(const string& prompt) {
+        while (true) {
+            cout << prompt;
+            string line;
+            if (!getline(cin, line)) return -1;
+            try { return stoi(line); }
+            catch (...) { cout << "Invalid input. Enter a number.\n"; }
+        }
+    }
+    // Calculates the final cost: BaseFare * Seats * 1.10 (for a 10% fee/tax).
+
+    static double computeCost(const Vehicle& v, int seats) {
+        return v.baseFare * seats * 1.10;
+    }
+
+public:
+    // Constructor: runs when the TransportSystemModule object is created.
+
+    TransportSystemModule() {
+        initializeVehicles(); // Load all vehicle data.
+    }
+
+    void bookTransport() {
+
+        listVehicles();
+        int vehicleId = readInt("Enter vehicle ID to book: ");
+        if (vehicleId == -1) return;
+
+        // Find the selected vehicle in the list
+        auto it = find_if(vehicles.begin(), vehicles.end(), [&](Vehicle& v) { return v.id == vehicleId; });
+        if (it == vehicles.end()) { cout << "Invalid vehicle ID.\n"; return; }
+        Vehicle& v = *it;
+        if (!v.available) { cout << "Vehicle currently unavailable.\n"; return; }
+
+        // Get booking details from the user.
+        cout << "Enter your name: ";
+        string cname; getline(cin, cname);
+        cout << "Enter date (YYYY-MM-DD): "; string date; getline(cin, date);
+        int seats = readInt("Enter number of seats to book: ");
+        if (seats <= 0 || seats > v.capacity) { cout << "Invalid number of seats.\n"; return; }
+
+
+        // Calculate cost and create the booking record.
+        double cost = computeCost(v, seats);
+        BookingTransport b = { nextBookingId++, v.id, cname, date, seats, cost };
+        bookings.push_back(b);
+        // If all seats are booked, mark the entire vehicle as unavailable.
+        if (seats == v.capacity) v.available = false;
+
+        cout << "Booking successful! Booking ID: " << b.bookingId << "\n";
+        printInvoice(b, v);
+    }
+
+    void runTransportSystem() {
+        while (true) {
+            cout << "\n=== Transport Booking System ===\n";
+            cout << "1. View Vehicles\n";
+            cout << "2. Book Transport\n";
+            cout << "0. Back to Main Menu\n";
+            cout << "Select option: ";
+            int opt;
+
+            if (!(cin >> opt)) {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid input. Please enter a number.\n";
+                continue;
+            }
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            if (opt == 1) listVehicles();
+            else if (opt == 2) bookTransport();
+            else if (opt == 0) break;
+            else cout << "Invalid option.\n";
+        }
+    }
+};
