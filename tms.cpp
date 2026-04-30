@@ -636,3 +636,162 @@ public:
         }
     }
 };
+
+// =============================================
+// MODULE 4: SIGN UP/LOGIN 
+// This class handles user authentication
+
+class UserAuthModule {
+private:
+    // A map to store usernames (key) and passwords (value).
+
+    map<string, string> registeredUsers;
+
+public:
+    // Function to handle the creation of a new user account.
+    bool signUp() {
+        cout << "\n\n----- USER SIGN UP -----\n";
+        string username, password;
+
+        cout << "Enter new username: ";
+        getline(cin, username);
+        // Check if the username is already taken.
+        if (registeredUsers.count(username)) {
+            cout << "Error: Username already exists. Please log in or choose another.\n";
+            return false;
+        }
+
+        cout << "Enter new password: ";
+        getline(cin, password);
+        // ensure both fields are not empty.
+        if (username.empty() || password.empty()) {
+            cout << "Sign up failed: Username or password cannot be empty.\n";
+            return false;
+        }
+
+        registeredUsers[username] = password;// Store the new user's credentials
+        cout << "Sign up successful!\n";
+        return true;
+    }
+    // Function to handle the user login process.
+
+    bool login() {
+        cout << "\n\n----- USER LOGIN -----\n";
+        string username, password;
+
+        cout << "Enter username: ";
+        getline(cin, username);
+
+        cout << "Enter password: ";
+        getline(cin, password);
+        auto it = registeredUsers.find(username);
+
+        if (it != registeredUsers.end()) {
+            // Check if the password matches the stored password
+            if (it->second == password) {
+                cout << "Login successful! Welcome, " << username << ".\n";
+                return true;
+            }
+        }
+        // If the username is not found or the password doesn't match
+        cout << "Login failed. Invalid username or password.\n";
+        return false;
+    }
+};
+// Function to display the main application menu after a successful login.
+
+void showMainMenu() {
+    cout << "\n\n**************************************************\n";
+    cout << "      TOURIST MANAGEMENT SYSTEM MENU             \n";
+    cout << "**************************************************\n";
+    cout << "1. Calculate Distance\n";
+    cout << "2. Hotel Booking\n";
+    cout << "3. Transport Booking\n";
+    cout << "0. Logout and Exit\n";
+    cout << "Enter your choice: ";
+}
+// Function to display the initial menu for signing up or logging in.
+
+void showAuthMenu() {
+    cout << "\nWELCOME TO TOURIST MANAGEMENT SYSTEM\n";
+    cout << "1. Sign Up\n";
+    cout << "2. Login\n";
+    cout << "0. Exit Program\n";
+    cout << "Choice: ";
+}
+
+int main() {
+    // Create an object for each management module.
+
+    TourDistanceModule tourModule;
+    HotelBookingModule hotelModule;
+    TransportSystemModule transportModule;
+    UserAuthModule authModule;
+
+    bool loggedIn = false;
+    // Keep asking the user to sign up or log in until they succeed or choose to exit.
+    while (!loggedIn) {
+        showAuthMenu();
+        int authChoice;
+
+        if (!(cin >> authChoice)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
+            continue;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+        if (authChoice == 1) {
+            // Sign Up then attempt to Login
+            if (authModule.signUp()) {
+                loggedIn = authModule.login();
+            }
+        }
+        else if (authChoice == 2) {
+            // Login directly
+            loggedIn = authModule.login();
+        }
+        else if (authChoice == 0) {
+            // Exit option from menu
+            cout << "Exiting system. Goodbye!\n";
+            return 0;
+        }
+        else {
+            cout << "Invalid choice. Please try again.\n";
+        }
+    }
+
+    //Main Application Loop runs only if loggedIn is true
+    int choice;
+    do {
+        showMainMenu();
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input. Please enter a number.\n";
+            continue;
+        }
+        // Call the appropriate function/module based on the user's choice.
+
+        switch (choice) {
+        case 1:
+            tourModule.runTourDistanceCalculator();
+            break;
+        case 2:
+            hotelModule.runHotelBooking();
+            break;
+        case 3:
+            transportModule.runTransportSystem();
+            break;
+        case 0:
+            cout << "Logging out. Thank you!\n";
+            break;
+        default:
+            cout << "Invalid option. Please try again.\n";
+            break;
+        }
+    } while (choice != 0);// Loop until the user chooses option 0 (Logout and Exit).
+
+    return 0;// Program finished successfully.
+}
