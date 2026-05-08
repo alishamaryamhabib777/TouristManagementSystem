@@ -68,21 +68,6 @@ Language: C++
 Compiler: Any standard C++ compiler (GCC, MSVC)
 Platform: Console Application
 
-## 📂 Project Structure
-
-Tourist-Management-System/
-│
-├── main.cpp
-├── bookings.txt
-└── README.md
-
-## ▶️ How to Run
-
-Compile the code:
-g++ main.cpp -o tourism
-Run the program:
-./tourism
-
 ## 📸 Sample Functionalities
 
 Calculate distance between cities and tourist spots
