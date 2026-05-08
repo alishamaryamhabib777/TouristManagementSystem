@@ -13,11 +13,11 @@ Input Validation & Error Handling
 
 ## 🚀 Features
 
-# 🔹 1. User Authentication Module
+### 🔹 1. User Authentication Module
 User Sign Up and Login
 Secure session handling (in-memory)
 
-# 🔹 2. Tour Distance Calculator
+### 🔹 2. Tour Distance Calculator
 Select tourist locations by category:
 Historical
 Urban
@@ -27,7 +27,7 @@ Northern areas
 Calculates distance using the Haversine Formula
 Supports major cities of Pakistan
 
-# 🔹 3. Hotel Booking System
+### 🔹 3. Hotel Booking System
 Choose hotels based on:
 City
 Budget
@@ -42,7 +42,7 @@ Meal options
 Bill calculation (USD & PKR)
 Booking history stored in file (bookings.txt)
 
-# 🔹 4. Transport Booking System
+### 🔹 4. Transport Booking System
 Book vehicles such as:
 Bus
 Car
