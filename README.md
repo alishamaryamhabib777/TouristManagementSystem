@@ -127,7 +127,7 @@ g++ -std=c++17 -o tms main.cpp
 3. Exit
 Enter choice: 2
 
-> Logged in as: alisha@nust.edu.pk
+> Welcome alisha@nust.edu.pk
 
 Main Menu:
 1. Distance Calculator
@@ -140,7 +140,7 @@ City: Lahore | Budget: PKR 10,000 | Rating: 3★
 Available rooms: Standard, Deluxe
 Meal plan: Yes
 Total Bill: PKR 9,500 / $34 USD
-Booking saved to bookings.txt ✓
+Booking saved
 ```
 
 ---
