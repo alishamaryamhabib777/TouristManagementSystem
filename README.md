@@ -83,4 +83,4 @@ Meerab Emaan
 
 ## 📜 License
 
-This project is for educational purposes only.
+This project is submitted as part of the CS-110 coursework at NUST. All rights reserved by the team members.
